@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    {% block css %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    {# 错误处理脚本必须最先加载 #}
+    <script src="{% static 'js/error-handler.js' %}"></script>
+    {% block js %}{% endblock %}
+    
+    <script>
+        // AJAX 错误处理
+        document.addEventListener('DOMContentLoaded', function() {
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return originalFetch.apply(this, arguments)
+                    .catch(error => {
+                        const errorData = {
+                            type: 'ajax',
+                            message: error.message,
+                            url: arguments[0],
+                            stack: error.stack
+                        };
+                        
+                        // 发送错误到服务器
+                        const formData = new FormData();
+                        Object.keys(errorData).forEach(key => {
+                            formData.append(key, errorData[key]);
+                        });
+                        
+                        return originalFetch('/api/log/js-error/', {
+                            method: 'POST',
+                            body: formData
+                        }).then(() => {
+                            throw error;  // 继续抛出原始错误
+                        });
+                    });
+            };
+        });
+    </script>
+</body>
+</html> 
