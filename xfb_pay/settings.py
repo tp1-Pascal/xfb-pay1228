@@ -23,7 +23,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 # 日志配置
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,  # 禁用现有的日志记录器
+    'disable_existing_loggers': False,
     'formatters': {
         'standard': {
             'format': '[%(asctime)s] %(levelname)s %(message)s',
@@ -32,7 +32,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
             'formatter': 'standard',
@@ -42,8 +42,8 @@ LOGGING = {
     'loggers': {
         '': {  # root logger
             'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': False
+            'level': 'DEBUG',
+            'propagate': True,
         }
     }
 }

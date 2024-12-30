@@ -163,22 +163,14 @@ class Product(BaseModel):
         return f"{self.name} (¥{self.price})"
 
     def save(self, *args, **kwargs):
-        # 生成商品编码
-        if not self.url_code:
-            self.url_code = self._generate_unique_code()
-        
-        # 更新时间处理
-        if self.pk:
-            try:
-                original = Product.objects.get(pk=self.pk)
-                if original.view_count != self.view_count or original.purchase_count != self.purchase_count:
-                    kwargs['update_fields'] = [f for f in kwargs.get('update_fields', []) 
-                                             if f not in ['updated_at']]
-                    self.updated_at = original.updated_at
-            except Product.DoesNotExist:
-                pass
-
-        super().save(*args, **kwargs)
+        try:
+            is_new = self.pk is None
+            logger.info(f"{'创建' if is_new else '更新'}商品 - 名称: {self.name}")
+            super().save(*args, **kwargs)
+            logger.debug(f"商品{'创建' if is_new else '更新'}成功 - ID: {self.pk}")
+        except Exception as e:
+            logger.error(f"商品保存失败 - 名称: {self.name}, 错误: {str(e)}")
+            raise
 
     def _generate_unique_code(self):
         """生成唯一商品编码"""
